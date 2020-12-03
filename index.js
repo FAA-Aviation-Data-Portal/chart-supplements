@@ -133,7 +133,7 @@ const listOne = async (icao, options) => {
   }
   
   const res = await superagent.get(`${BASE_URL}results/?cycle=${searchCycle}&ident=${icao}&navaid=`)
-  return parse(res.text)
+  return await parse(res.text, options.getNextCycle)
 }
 
 /**
@@ -184,7 +184,7 @@ const extractRow = ($row) => {
 /**
  * Parse the documents out of the response HTML
  */
-const parse = (html) => {
+const parse = async (html, isNextCycle) => {
   const $ = cheerio.load(html)
   const $resultsTable = $('#resultsTable')
   const noResultsFound = $('.message-box.info').text().trim()
@@ -198,7 +198,7 @@ const parse = (html) => {
     return null
   }
   
-  const { effectiveStartDate, effectiveEndDate } = extractEffectiveDates($)
+  const { effectiveStartDate, effectiveEndDate, } = await chartSupplements.getCycleEffectiveDates(isNextCycle ? 'Next': 'Current')
   
   const results = $resultsTable
     .find('tr')
@@ -217,20 +217,6 @@ const parse = (html) => {
     .filter(x => !!x)
 
   return results
-}
-
-/**
- * Scrape the Effective date range from the dom
- * @param {Object} $ - The Cheerio object that contains the serialized dom
- * @returns {Object} - An object containing the effective start and end date
- */
-const extractEffectiveDates = $ => {
-  const baseEffectiveDateString = $('.resultsSummary .join').html()
-  .split(':')[1]
-  .split('<')[0]
-  .trim()
-
-  return parseEffectiveDates(baseEffectiveDateString)
 }
 
 const parseEffectiveDates = str => {

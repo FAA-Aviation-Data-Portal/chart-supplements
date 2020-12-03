@@ -48,6 +48,6 @@ chartSupplements.currentCycleEffectiveDates().then(c => {
 
 // The `getNextCycle` option will get the next cycle if it is available when set to true
 //  If it is omitted or set to false, the current cycle will be queried
-chartSupplements.list(['PANC', 'PADK'], { getNextCycle: true, }).then(results => {
+chartSupplements.list(['PANC', 'PADK'], { getNextCycle: false, }).then(results => {
   console.log(JSON.stringify(results, null, 2))
 })

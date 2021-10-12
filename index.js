@@ -31,7 +31,9 @@ chartSupplements.currentCycleEffectiveDates = async () => {
   const response = await superagent
     .get(BASE_URL)
     .set('Accept', ACCEPT)
-  
+    .timeout({ deadline: 30000 })
+    .retry(3)
+
   const $ = cheerio.load(response.text)
   var currentCycle = $('select#cycle > option:contains(Current)').text()
   return parseEffectiveDates(currentCycle.replace(/(\n|\t)/gm, ''))
@@ -49,7 +51,9 @@ const fetchCycle = async (cycle = 'Current') => {
   const response = await superagent
     .get(BASE_URL)
     .set('Accept', ACCEPT)
-  
+    .timeout({ deadline: 30000 })
+    .retry(3)
+
   const $ = cheerio.load(response.text)
   const $cycle = $(`select#cycle > option:contains(${cycle})`)
   if (!$cycle) {
@@ -66,7 +70,7 @@ chartSupplements.fetchCycle = fetchCycle
 chartSupplements.getCycleEffectiveDates = async (cycle = 'Current') => {
   const { text: currentCycle, } = await fetchCycle(cycle)
   return parseEffectiveDates(currentCycle.replace(/(\n|\t)/gm, ''))
-} 
+}
 
 chartSupplements.currentCycleEffectiveDates = async () => {
   const { text: currentCycle, } = await fetchCycle()
@@ -110,7 +114,7 @@ chartSupplements.fetchNextCycleCode = fetchNextCycleCode
  */
 const listOne = async (icao, options) => {
   let searchCycle = null
-  
+
   if (options.getNextCycle === true) {
     searchCycle = await fetchNextCycleCode()
   }
@@ -131,8 +135,11 @@ const listOne = async (icao, options) => {
   if (searchCycle) {
     urlParams.push(`cycle=${searchCycle}`)
   }
-  
-  const res = await superagent.get(`${BASE_URL}results/?cycle=${searchCycle}&ident=${icao}&navaid=`)
+
+  const res = await superagent
+    .get(`${BASE_URL}results/?cycle=${searchCycle}&ident=${icao}&navaid=`)
+    .timeout({ deadline: 30000 })
+    .retry(3)
   return await parse(res.text, options.getNextCycle)
 }
 
@@ -197,9 +204,9 @@ const parse = async (html, isNextCycle) => {
     console.error('Unable to parse the #resultsTable page element')
     return null
   }
-  
+
   const { effectiveStartDate, effectiveEndDate, } = await chartSupplements.getCycleEffectiveDates(isNextCycle ? 'Next': 'Current')
-  
+
   const results = $resultsTable
     .find('tr')
     .toArray()

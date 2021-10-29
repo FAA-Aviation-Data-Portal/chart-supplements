@@ -138,6 +138,7 @@ const listOne = async (icao, options) => {
 
   const res = await superagent
     .get(`${BASE_URL}results/?cycle=${searchCycle}&ident=${icao}&navaid=`)
+    .set('Accept', ACCEPT)
     .timeout({ deadline: 30000 })
     .retry(3)
   return await parse(res.text, options.getNextCycle)

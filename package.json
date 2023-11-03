@@ -1,7 +1,7 @@
 {
   "name": "chart-supplements",
   "description": "Fetch chart supplements for airports",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "Chad March",
     "email": "cmarch@resourcedata.com",

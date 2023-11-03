@@ -35,7 +35,7 @@ chartSupplements.currentCycleEffectiveDates = async () => {
     .retry(3)
 
   const $ = cheerio.load(response.text)
-  var currentCycle = $('select#cycle > option:contains(Current)').text()
+  const currentCycle = $('select#cycle > option:contains(Current)').text()
   return parseEffectiveDates(currentCycle.replace(/(\n|\t)/gm, ''))
 }
 
@@ -68,12 +68,12 @@ const fetchCycle = async (cycle = 'Current') => {
 chartSupplements.fetchCycle = fetchCycle
 
 chartSupplements.getCycleEffectiveDates = async (cycle = 'Current') => {
-  const { text: currentCycle, } = await fetchCycle(cycle)
+  const { text: currentCycle } = await fetchCycle(cycle)
   return parseEffectiveDates(currentCycle.replace(/(\n|\t)/gm, ''))
 }
 
 chartSupplements.currentCycleEffectiveDates = async () => {
-  const { text: currentCycle, } = await fetchCycle()
+  const { text: currentCycle } = await fetchCycle()
   if (!currentCycle) {
     console.warn('Could not retrieve current cycle effective dates')
     return
@@ -129,7 +129,7 @@ const listOne = async (icao, options) => {
   }
 
   // Build up a base set of query params
-  let urlParams = [ `ident=${icao}`, ]
+  const urlParams = [`ident=${icao}`]
   // The searchCycle is optional as the API assumes the latest already
   // and this function uses the latest cycle
   if (searchCycle) {
@@ -200,24 +200,23 @@ const parse = async (html, isNextCycle) => {
   if (!!noResultsFound && noResultsFound === 'No results found.') {
     console.warn(noResultsFound)
     return null
-  }
-  else if (!$resultsTable.html()) {
+  } else if (!$resultsTable.html()) {
     console.error('Unable to parse the #resultsTable page element')
     return null
   }
 
-  const { effectiveStartDate, effectiveEndDate, } = await chartSupplements.getCycleEffectiveDates(isNextCycle ? 'Next': 'Current')
+  const { effectiveStartDate, effectiveEndDate } = await chartSupplements.getCycleEffectiveDates(isNextCycle ? 'Next' : 'Current')
 
   const results = $resultsTable
     .find('tr')
     .toArray()
     .map(row => {
-      var row = extractRow($(row))
-      if (!row) {
-        return row
+      const chart = extractRow($(row))
+      if (!chart) {
+        return chart
       }
       return {
-        ...row,
+        ...chart,
         effectiveStartDate,
         effectiveEndDate
       }
@@ -231,15 +230,15 @@ const parseEffectiveDates = str => {
   if (!str) {
     return null
   }
-  const [ startMonthDay, remainder ] = str.split('-')
-  const [ endMonthDay, yearAndCycle ] = remainder.split(',')
-  const [ year, _ ] = yearAndCycle.split('[')
+  const [startMonthDay, remainder] = str.split('-')
+  const [endMonthDay, yearAndCycle] = remainder.split(',')
+  const [year] = yearAndCycle.split('[')
 
   const effectiveStartDate = new Date(`${startMonthDay.trim()} ${year}`)
-  effectiveStartDate.setUTCHours(0,0,0,0)
+  effectiveStartDate.setUTCHours(0, 0, 0, 0)
 
   const effectiveEndDate = new Date(`${endMonthDay.trim()} ${year}`)
-  effectiveEndDate.setUTCHours(0,0,0,0)
+  effectiveEndDate.setUTCHours(0, 0, 0, 0)
 
   return { effectiveStartDate, effectiveEndDate }
 }

@@ -1,3 +1,7 @@
+⚠️ This project has been deprecated. ⚠️
+
+**This package is no longer maintained and will be deleted in 30 days.**
+
 # chart-supplements
 
 [![Build Status][travis-image]][travis-url]
